@@ -1,0 +1,601 @@
+schemas:
+  SignUpRequest:
+    properties:
+      scope:
+        type: string
+        enum:
+        - OPENID
+        title: Scope
+      username:
+        type: string
+        title: Username
+      password:
+        type: string
+        title: Password
+    type: object
+    required:
+    - scope
+    - username
+    - password
+    title: SignUpRequest
+  AuthenticationRequest:
+    properties:
+      scope:
+        type: string
+        enum:
+        - OPENID
+        title: Scope
+      grantType:
+        type: string
+        enum: 
+        - PASSWORD
+        - REFRESH-TOKEN
+        title: GrantType
+      username:
+        type: string
+        title: Username
+      password:
+        type: string
+        title: Password
+      refreshToken:
+        type: string
+        format: JWT
+        title: RefreshToken
+    type: object
+    required:
+    - scope
+    - grantType
+    title: AuthenticationRequest
+  AuthenticationResponse:
+    properties:
+      userUid:
+        type: string
+        format: UUID
+        title: UserUid
+      refreshToken:
+        type: string
+        format: JWT
+        title: RefreshToken
+      accessToken:
+        type: string
+        format: JWT
+        title: AccessToken
+      expiresIn:
+        type: integer
+        format: UNIX time
+        title: ExpiresIn
+      scope:
+        type: string
+        title: Scope
+    type: object
+    required:
+    - userUid
+    - refreshToken
+    - accessToken
+    - expiresIn
+    - scopeds
+    title: AuthenticationResponse
+  UserInfo:
+    properties:
+      userUid:
+        type: string
+        format: uuid
+        title: UserUid
+      username:
+        type: string
+        title: Username
+      numOfGames:
+        type: integer
+        title: NumOfGames
+      numOfWins:
+        type: integer
+        title: NumOfWins
+      userState:
+        type: string
+        enum:
+        - IN-GAME
+        - MENU
+        title: UserState
+      userRank:
+        type: string
+        enum:
+        - РЕКРУТ
+        - РЯДОВОЙ
+        - СЕРЖАНТ
+        - КАПИТАН
+        - МАЙОР
+        - ПОЛКОВНИК
+        - ГЕНЕРАЛ
+        title: UserRank
+        description:
+        - Рекрут - 0 побед
+        - Рядовой - 5 побед
+        - Сержант - 10 побед
+        - Капитан - 25 побед
+        - Майор - 50 побед
+        - Полковник - 100 побед
+        - Генерал - 250 побед
+      roomUid:
+        type: string
+        format: uuid
+        title: RoomUid
+        description: если UserState = MENU, то roomUid = ""
+    type: object
+    required:
+    - userUid
+    - username
+    - numOfGames
+    - numOfWins
+    - userState
+    - userRank
+    - roomUid
+    title: UserInfo
+  RoomInfo:
+    properties:
+      roomUid:
+        type: string
+        format: uuid
+        title: RoomUid
+      roomState:
+        type: string
+        enum:
+        - FORMING
+        - GAMING
+        - DISSOLUTION
+        title: RoomState
+      playerList:
+        type: array
+        items: 
+          "$ref": "#/components/schemas/Player"
+        title: PlayerList
+        description: Список игроков в комнате (в том числе и текущий пользователь)
+      tableCardList:
+        type: array
+        items: 
+          "$ref": "#/components/schemas/PlayingCard"
+        title: TableCardList
+        description: Список карт в центре стола
+      stack:
+        type: integer
+        title: Stack
+        description: Величина банка (депозита текущего раунда).
+      bout:
+        type: string
+        format: uuid
+        title: Bout
+        description: UserUid игрока, чей черед хода в данный момент. Если комната находится на этапе формирования, то bout = "" 
+      lastEventId:
+        type: integer
+        title: LastEventId
+        description: id последнего события комнаты, которое учитывается в этом состоянии
+      minBlind:
+        type: integer
+        title: MinBlind
+        description: размер малого блайнда. На этапе формирования minBlind = 0
+      maxBlind:
+        type: integer
+        title: MaxBlind
+        description: размер большого блайнда. На этапе формирования maxBlind = 0
+      roundNumber:
+        type: integer
+        title: RoundNumber
+    type: object
+    required:
+    - roomUid
+    - roomState
+    - playerList
+    - tableCardList
+    - stack
+    - bout
+    - lastEventId
+    - minBlind
+    - maxBlind
+    - roundNumber
+    title: RoomInfo
+  PlayingCard:
+    properties:
+      cardSuit:
+        type: string
+        enum:
+        - DIAMONDS
+        - HEARTS
+        - CLUBS
+        - SPADES
+        title: CardSuit
+      index:
+        type: string
+        enum:
+        - ACE
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+        - 10
+        - JACK
+        - QUEEN
+        - KING
+        title: Index
+    type: object
+    required:
+    - cardSuit
+    - index
+    title: PlayingCard
+  Player:
+    properties:
+      userUid:
+        type: string
+        format: uuid
+        title: UserUid
+      username:
+        type: string
+        title: Username
+      imageURL:
+        type: string
+        title: ImageURL
+      bet:
+        type: integer
+        title: Bet
+        description: величина ставки игрока. В начале раунда bet = 0. Далее bet принимает значение ставки. После принятия ставок (фишки отправляются в стек) bet = 0.
+      deposit:
+        type: integer
+        title: Deposit
+        description: величина депозита игрока
+      state:
+        type: string
+        enum:
+        - ACTIVE
+        - INACTIVE
+        title: State
+        description: игрок становится INACTIVE до конца раунда, когда выбирает "фолд" 
+      personalCardList:
+        type: array
+        items: 
+          "$ref": "#/components/schemas/PlayingCard"
+        title: PersonalCardList
+        description: Список карт пользователя. До момента вскрытия карт списки карт игроков (кроме текущего) будут пустыми
+    type: object
+    required:
+    - userUid
+    - username
+    - bet
+    - personalCardList
+    title: Player
+  
+  ws-messages-from-server:
+    ReponseMessage:
+      properties:
+        messageType:
+          type: string
+          const: true
+          enum:
+          - ACK
+          title: MessageType
+        ackMessageId:
+          type: integer
+          title: ACKMessageId
+          description: ID сообщения, которому соответствует данное подтверждение
+        statusCode:
+          type:
+          enum:
+          - 200
+          - 401
+          - 400
+          description: 200 - сообщение обработано корректно; 401 - срок действия access-token истек; 400 - некорректная команда
+          title: StatusCode
+      type: object
+      required:
+      - messageType
+      - ackMessageId
+      - statusCode
+      title: ReponseMessage
+    EventMessage:
+      properties:
+        messageType:
+          type: string
+          const: true
+          enum:
+          - EVENT
+          title: MessageType
+        messageId:
+          type: integer
+          title: MessageId
+        eventDescriptor:
+          type: object
+          oneOf:
+            "$ref": "#/components/schemas/event-descriptors/PlayerActionEvent"
+            "$ref": "#/components/schemas/event-descriptors/PrepareEvent"
+            "$ref": "#/components/schemas/event-descriptors/GameEvent"
+          title: EventDescriptor
+      type: object
+      required:
+      - messageType
+      - messageId
+      - eventDescriptor
+      title: EventMessage
+  event-descriptors:
+    PlayerActionEvent:
+      description: Описывает действие игрока с идентификатором, хранящемся в поле userUid
+      properties:
+        eventId:
+          type: string
+          format: uuid
+          title: EventId
+        userUid:
+          type: string
+          format: uuid
+          title: UserUid
+        actionType:
+          type: string
+          enum:
+          - INCOME
+          - OUTCOME
+          - BOUT
+          - FOLD
+          - CHECK
+          - CALL
+          - RAISE
+          description: INCOME - игрок присоединился к комнате. OUTCOME - покинул комнату. BOUT - получил черед делать ход
+            FOLD, CHECK, CALL, RAISE - сделал соответствующее действие в процессе игры.
+            Если actionType = OUTCOME и в userUid находится uid текущего игрока, значит он проиграл - покидает комнату.
+          title: ActionType
+        boutVariants:
+          type: array
+          items: 
+            "$ref": "#/components/schemas/BoutVariant"
+          description: Содержит возможные варианты хода для игрока. Передается, когда actionType = BOUT и при этом
+            userUid = uid текущего игрока
+          title: BoutVariants
+        newStack:
+          type: integer
+          description: Обновленное значение стека (банк фишек на столе). Передается, когда actionType = CALL или RAISE
+          title: NewStack
+        newBet:
+          type: integer
+          description: Обновленное значение ставки игрока. Передается, когда actionType = CALL или RAISE
+          title: NewBet
+        newDeposit:
+          type: integer
+          description: Обновленное значение депозита игрока. Передается, когда actionType = CALL или RAISE
+          title: NewDeposit
+      type: object
+      required:
+      - eventId
+      - userUid
+      - actionType
+      title: PlayerActionEvent
+    PrepareEvent:
+      description: Описывает собитие изменения соотношения: 
+                     сколько игроков в комнате и сколько из них проголосовало за вариант <START>
+      properties:
+        eventId:
+          type: string
+          format: uuid
+          title: EventId
+        numOfPlayers:
+          type: integer
+          description: количество игроков в комнате
+          title: NumOfPlayers
+        numOfStartPlayers:
+          type: integer
+          description: количество игроков, проголосовавших начать игру
+          title: NumOfStartPlayers
+      type: object
+      required:
+      - eventId
+      - numOfPlayers
+      - numOfStartPlayers
+      title: PrepareEvent
+    GameEvent:
+      description: Описывает игровые события, связанные с распределением, раскрытием карт, изменение состояний комнаты и др.
+      properties:
+        eventId:
+          type: string
+          format: uuid
+          title: EventId
+        eventType:
+          type: string
+          enum:
+          - ROOM_STATE_UPDATE
+          - PERSONAL_CARDS
+          - CARDS_ON_TABLE
+          - WINNER_RESULT
+          description: ROOM_STATE_UPDATE - обновление состояния комнаты. 
+                       PERSONAL_CARDS - сообщение содержит список карт игрока, выданных взакрытую в начале раунда
+                       CARDS_ON_TABLE - обновление списка открытых карт, лежащих на столе
+                       WINNER_RESULT - вскрытие всех карт игроков, оглашение выигравшей комбинации и победителя раунда
+          title: EventType
+        newRoomState:
+          type: string
+          enum:
+          - FORMING
+          - GAMING
+          - DISSOLUTION
+          description: Передается, когда eventType = ROOM_STATE_UPDATE. Содержит новое состояние комнаты
+          title: NewRoomState
+        playingCardsList:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PlayingCard"
+          description: Передается, когда eventType = PERSONAL_CARDS или CARDS_ON_TABLE. 
+                       Содержит, соотственно, список карт игрока, выданных взакрытую, и список открытых карт на столе
+          title: PlayingCardsList
+        closedCards:
+          type: array
+          description: Передается, когда eventType = WINNER_RESULT. В i-й ячейке содержит карты i-го игрока поля playerUids
+          items:
+            type: array
+            items:
+              "$ref": "#/components/schemas/PlayingCard"
+          title: ClosedCards
+        playerUids:
+          type: array
+          description: Передается, когда eventType = WINNER_RESULT. Содержит Uid игроков комнаты 
+          items:
+            type: string
+            format: uuid
+          title: PlayerUids
+        winnerUids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Передается, когда eventType = WINNER_RESULT. Содержит Uid игроков-победителей раунда
+          title: WinnerUid
+        bestCombinations:
+          description: Передается, когда eventType = WINNER_RESULT. 
+                       В i-й ячейке содержатся карты выигрышной комбинации i-го победителя из winnerUids
+          type: array
+          items:
+            type: array
+            items:
+              "$ref": "#/components/schemas/PlayingCard"
+          title: BestCombinations
+        winnerDeposits:
+          type: array
+          items:
+            type: integer
+          description: Передается, когда eventType = WINNER_RESULT. 
+                       В i-й ячейке содержит обновленный депозит i-го победителя из winnerUids
+        newStack:
+          type: integer
+          description: Передается, когда eventType = WINNER_RESULT. Обновленное значение стека (банк фишек на столе)
+          title: NewStack
+      type: object
+      required:
+      - eventId
+      - eventType
+      title: GameEvent
+  BoutVariant:
+    properties:
+      variantType:
+        type: string
+        enum:
+        - FOLD
+        - CHECK
+        - CALL
+        - RAISE
+        title: VariantType
+      bestCombName:
+        type: string
+        description: наименование лучшей комбинации, имеющейся у игрока в данный момент
+        title: BestCombName
+      callValue:
+        type: integer
+        description: Передается, когда variantType = CALL. Сумма, которую должен принять игрок, чтобы уровнять ставку
+        title: CallValue
+      raiseVariants:
+        type: array
+        items:
+          type: string
+          enum:
+          - X1_5
+          - X2
+          - ALL-IN
+        description: Передается, когда variantType = RAISE. Варианты увеличения ставки.
+        title: RaiseVariants
+    type: object
+    required:
+    - variantType
+    - bestCombName
+    title: BoutVariant 
+  ws-messages-from-player:
+    AuthMessage:
+      properties:
+        messageType:
+          type: string
+          const: true
+          enum:
+          - AUTH
+          title: MessageType
+        messageId:
+          type: integer
+          title: MessageId
+        roomUid:
+          type: string
+          format: uuid
+          title: RoomUid
+        token:
+          type: string
+          title: Token
+          description: access-token сессии
+        lastEventId:
+          type: integer
+          title: LastEventId
+          description: ID последнего события игровой комнаты. 
+            При начальном установлении WebSocket-соединения значение брать из одноименного поля объекта RoomInfo.
+            В случае восстановления WebSocket-соединения после разрыва значение равно ID последнего полученного события.
+      type: object
+      required:
+      - messageType
+      - messageId
+      - roomUid
+      - token
+      - lastEventId
+      title: AuthMessage
+    ActionMessage:
+      properties:
+        messageType:
+          type: string
+          const: true
+          enum:
+          - GAME-ACTION
+          - VOTE
+          title: MessageType
+        messageId:
+          type: integer
+          title: MessageId
+        roomUid:
+          type: string
+          format: uuid
+          title: RoomUid
+        userUid:
+          type: string
+          format: uuid
+          title: UserUid
+        actionType:
+          type: string
+          enum:
+          - FOLD
+          - CHECK
+          - CALL
+          - RAISE
+          - CLOSE
+          description: Передается, когда messageType = GAME-ACTION
+          title: ActionType
+        coef:
+          type: string
+          enum:
+          - X1_5
+          - X2
+          - ALL-IN
+          description: Передается, когда messageType = GAME-ACTION и actionType = RAISE
+          title: Coef
+        voteType:
+          type: string
+          enum:
+          - START
+          - WAIT
+          description: Передается, когда messageType = VOTE
+                       WAIT - игрок хочет дождаться, пока наберется 5 игроков в комнате. 
+                       START - игрок не хочет ждать.
+          title: VoteType
+      type: object
+      required:
+      - messageType
+      - messageId
+      - roomUid
+      - userUid      
+      title: ActionMessage
+  ErrorResponse:
+    properties:
+      message:
+        type: string
+        title: Message
+    type: object
+    required:
+    - message
+    title: ErrorResponse

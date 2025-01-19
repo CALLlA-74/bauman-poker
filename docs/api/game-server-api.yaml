@@ -1,0 +1,220 @@
+---
+openapi: 1.0.0
+info:
+  title: Bauman Poker
+  description: Онлайн-игра "Бомонский ПОКЕР"
+  version: v1
+servers:
+  - url: http://[server ip]:80/
+paths:
+  /manage/health:
+    get:
+      tags:
+      - Game-server API
+      summary: Проверить доступность сервера
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /api/v1/register:
+    post:
+      tags:
+      - Game-server API
+      summary: Зарегистрировать нового игрока
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignUpRequest"
+      responses:
+        '200':
+          description: Сессионные параметры
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AuthenticationResponse"
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+  /api/v1/oauth/token:
+    post:
+      tags:
+      - Game-server API
+      summary: Аутентификация игрока
+      description: Возможны два варианта аутентификации:
+                    1) по имени пользователя и паролю (поля username и password заполняются; refresh-token = "")
+                    2) по refresh-token (поля username и password = ""; в поле refresh-token записывается токен игрока)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthenticationRequest"
+      responses:
+        '200':
+          description: Сессионные параметры
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AuthenticationResponse"
+        '401':
+          description: Неверные имя пользователя или пароль, или refresh-token истек
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+  /api/v1/me:
+    get:
+      tags:
+      - Game-server API
+      summary: Получение информации о текущем игроке
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Информация об игроке
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/UserInfo"
+        '401':
+          description: access-token истек
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+  /api/v1/rooms/search:
+    get:
+      tags:
+      - Game-server API
+      summary: Поиск игровой комнаты
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Информация подобранной о комнате
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RoomInfo"
+        '401':
+          description: access-token истек
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+  /api/v1/rooms/{roomUid}:
+    get:
+      tags:
+      - Game-server API
+      summary: Получение информации об игровой комнате по RoomUid
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: roomUid
+          in: path
+          description: UUID игровой комнаты
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Информация о комнате
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RoomInfo"
+        '401':
+          description: access-token истек
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+  /api/v1/players/{userUid}:
+    get:
+      tags:
+      - Game-server API
+      summary: Получение информации об игроке по userUid
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: userUid
+          in: path
+          description: UUID игрока
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Информация об игроке
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Player"
+        '401':
+          description: access-token истек
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+  /api/v1/rooms-ws/{roomUid}:
+    get:
+      tags:
+      - Game-server API
+      summary: Подключение к игровой комнате по RoomUid
+      parameters:
+        - name: roomUid
+          in: path
+          description: UUID игровой комнаты
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '101':
+          description: Переход на протокол WebSocket. См. game-server-ws-api.yaml
+          content:
+            application/json:
+              schema: {}
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"

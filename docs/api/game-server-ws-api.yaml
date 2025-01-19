@@ -1,0 +1,42 @@
+asyncapi: 3.0.0
+info:
+  title: Bauman Poker
+  description: Онлайн-игра "Бомонский ПОКЕР"
+  version: v1
+servers:
+  game-server:
+    - url: ws://[server ip]:80/
+channels:
+  game-channel:
+    address: "/api/v1/rooms-ws/{roomUid}"
+    title: Gaming stream channel
+    description: Используется для обмена игровыми командами в процессе игры
+    parameters:
+      - name: roomUid
+        in: path
+        description: UUID игровой комнаты
+        required: true
+        schema:
+          type: string
+          format: uuid
+    servers:
+      "$ref": "#/servers/game-server"
+operations:
+  send-command:
+    action: send
+    channel:
+      "$ref": "#/channels/game-channel"
+    title: Отправка сообщения серверу
+    messages:
+      oneOf:
+        "$ref": "#/components/schemas/ws-messages-from-player/AuthMessage"
+        "$ref": "#/components/schemas/ws-messages-from-player/ActionMessage"
+  receive-command:
+    action: receive
+    channel:
+      "$ref": "#/channels/game-channel"
+    title: Получение сообщения от сервера
+    messages:
+      oneOf:
+        "$ref": "#/components/schemas/ws-messages-from-server/ReponseMessage"
+        "$ref": "#/components/schemas/ws-messages-from-server/EventMessage"
