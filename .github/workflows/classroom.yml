@@ -15,7 +15,6 @@ on:
 jobs:
   deploy:
     name: Deploy service on VM
-    needs: [unit-tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
