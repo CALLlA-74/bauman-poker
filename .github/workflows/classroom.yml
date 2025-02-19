@@ -47,4 +47,3 @@ jobs:
             echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker rmi game_server
             echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker-compose build
             echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker-compose up -d
-            echo ${{ secrets.SSH_PASSWORD }} | sudo ./scripts/wait-script.sh
