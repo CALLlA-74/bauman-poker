@@ -46,8 +46,6 @@ services:
     networks:
       - default
     depends_on:
-      #identity-provider:
-      #  condition: service_healthy
       players:
         condition: service_healthy
     environment:
