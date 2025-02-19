@@ -36,11 +36,11 @@ services:
       timeout: 2s
       retries: 1
 
-  game-server:
+  game_server:
     image: gateway-service
     build: 
       context: .
-      dockerfile: ./code/game-server/Dockerfile
+      dockerfile: ./code/game_server/Dockerfile
     ports:
       - "8080:8080"
     networks:
@@ -51,10 +51,10 @@ services:
     environment:
       DB_CONFIG: "host=players user=program password=test dbname=players port=5432"
 
-  identity-provider:
+  identity_provider:
     build:
       context: .
-      dockerfile: ./code/identity-provider/Dockerfile
+      dockerfile: ./code/identity_provider/Dockerfile
     depends_on:
       users:
         condition: service_healthy
