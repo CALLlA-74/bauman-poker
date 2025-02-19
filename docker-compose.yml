@@ -1,0 +1,75 @@
+version: "3"
+services:
+  users:
+    image: library/postgres:16-alpine
+    environment:
+      - POSTGRES_USER=program
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=users
+    networks:
+      - default
+    volumes:
+      - db-users:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U program"]
+      interval: 2s
+      timeout: 2s
+      retries: 1
+  players:
+    image: library/postgres:16-alpine
+    environment:
+      - POSTGRES_USER=program
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=players
+    networks:
+      - default
+    volumes:
+      - db-players:/var/lib/postgresql/data
+      #- ./postgres/:/docker-entrypoint-initdb.d/
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U program"]
+      interval: 2s
+      timeout: 2s
+      retries: 1
+
+  game-server:
+    image: gateway-service
+    build: 
+      context: .
+      dockerfile: ./code/game-server/Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - default
+    depends_on:
+      identity-provider:
+        condition: service_healthy
+      players:
+        condition: service_healthy
+    environment:
+      DB_CONFIG: "host=players user=program password=test dbname=players port=5432"
+
+  identity-provider:
+    build:
+      context: .
+      dockerfile: ./code/identity-provider/Dockerfile
+    depends_on:
+      users:
+        condition: service_healthy
+    ports:
+      - "8090:8090"
+    networks:
+      - default
+    environment:
+      DB_CONFIG: "host=users user=program password=test dbname=users port=5432"
+
+volumes:
+  db-users:
+  db-players:
+  
+networks:
+  default:

@@ -73,6 +73,31 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+  /api/v1/oauth/revoke:
+    delete:
+      tags:
+      - Game-server API
+      summary: Завершение сессии игрока (в заголовке авторизации посылается refresh-token)
+      security:
+        - bearerAuth: [refresh-token]
+      responses:
+        '204':
+          description: Успешное завершение сессии
+          content:
+            application/json:
+              schema: {}
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
   /api/v1/me:
     get:
       tags:
@@ -99,7 +124,7 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
-  /api/v1/rooms/search:
+  /api/v1/rooms/matching:
     get:
       tags:
       - Game-server API
@@ -153,6 +178,12 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+        '404':
+          description: Комната не найдена
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -180,9 +211,15 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/Player"
+                "$ref": "#/components/schemas/PlayerInfo"
         '401':
           description: access-token истек
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '404':
+          description: Игрок не найден
           content:
             application/json:
               schema:
@@ -197,7 +234,7 @@ paths:
     get:
       tags:
       - Game-server API
-      summary: Подключение к игровой комнате по RoomUid
+      summary: WebSocket connection. Подключение к игровой комнате по RoomUid
       parameters:
         - name: roomUid
           in: path
@@ -206,12 +243,24 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: uid
+          in: query
+          description: uid игрока, подключающегося к игровой комнате
+          required: true
+          schema:
+            type: string
       responses:
         '101':
           description: Переход на протокол WebSocket. См. game-server-ws-api.yaml
           content:
             application/json:
               schema: {}
+        '404':
+          description: Комната не найдена
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
         '500':
           description: Внутренняя ошибка сервера
           content:

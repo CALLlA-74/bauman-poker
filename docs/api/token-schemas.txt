@@ -1,0 +1,24 @@
+type Header struct {
+	Alg       string   
+	Typ       string   
+	Kid       string   
+	TokenType TokenType
+}
+
+type AccessTokenPayload struct {
+	Jti      string
+	UserUid  string
+	Iss      string
+	Iat      int64 
+	Exp      int64 
+	DeviceId string
+}
+
+type RefreshTokenPayload struct {
+	Jti      string
+	UserUid  string
+	Iss      string
+	Iat      int64 
+	Exp      int64 
+	DeviceId string
+}

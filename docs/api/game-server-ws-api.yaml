@@ -29,6 +29,7 @@ operations:
     title: Отправка сообщения серверу
     messages:
       oneOf:
+        "$ref": "#/components/schemas/ws-messages-from-player/PongMessage"
         "$ref": "#/components/schemas/ws-messages-from-player/AuthMessage"
         "$ref": "#/components/schemas/ws-messages-from-player/ActionMessage"
   receive-command:
@@ -38,5 +39,6 @@ operations:
     title: Получение сообщения от сервера
     messages:
       oneOf:
+        "$ref": "#/components/schemas/ws-messages-from-server/PingMessage"
         "$ref": "#/components/schemas/ws-messages-from-server/ReponseMessage"
         "$ref": "#/components/schemas/ws-messages-from-server/EventMessage"
