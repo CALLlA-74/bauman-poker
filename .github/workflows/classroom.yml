@@ -4,10 +4,14 @@ on:
     branches:
       - master
       - develop
+      - main
+      - origin
   pull_request:
     branches:
       - master
       - develop
+      - main
+      - origin
 jobs:
   deploy:
     name: Deploy service on VM
@@ -41,7 +45,7 @@ jobs:
             cd /home/${{ secrets.SSH_USER }}/bauman-poker
             echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker-compose down
             echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker rmi 
-            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker rmi identity-service
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker rmi identity-provider
             echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker rmi game-server
             echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker-compose build
             echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker-compose up -d
