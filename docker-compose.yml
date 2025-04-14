@@ -27,7 +27,6 @@ services:
       - default
     volumes:
       - db-players:/var/lib/postgresql/data
-      #- ./postgres/:/docker-entrypoint-initdb.d/
     ports:
       - "5433:5432"
     healthcheck:
@@ -36,25 +35,27 @@ services:
       timeout: 2s
       retries: 1
 
-  game_server:
+  game-server:
     image: gateway-service
     build: 
       context: .
-      dockerfile: ./code/game_server/Dockerfile
+      dockerfile: ./code/game-server/Dockerfile
     ports:
       - "8080:8080"
     networks:
       - default
     depends_on:
+      identity-provider:
+        condition: service_healthy
       players:
         condition: service_healthy
     environment:
       DB_CONFIG: "host=players user=program password=test dbname=players port=5432"
 
-  identity_provider:
+  identity-provider:
     build:
       context: .
-      dockerfile: ./code/identity_provider/Dockerfile
+      dockerfile: ./code/identity-provider/Dockerfile
     depends_on:
       users:
         condition: service_healthy
